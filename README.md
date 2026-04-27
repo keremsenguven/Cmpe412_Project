@@ -1,4 +1,4 @@
-# 🍽️ Turkish Recipe Recommendation System
+#Turkish Recipe Recommendation System
 ## AI Expert A — NLP-Based Ingredient Matching
 
 ## Overview
@@ -145,5 +145,4 @@ async def recommend(ingredients: list[str]):
 | Makarna | makarna, kıyma, domates | Fırında Beşamel Soslu Kıymalı Makarna | 0.752 |
 | Patates | patates, yumurta, soğan, zeytinyağı | İspanyol Omleti | 0.871 |
 
-## Author
-AI Expert A — CMPE 412 Group Project
+
