@@ -1,0 +1,227 @@
+.inv-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-add {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-add:hover {
+  background: var(--green-light);
+}
+
+.inv-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  background: var(--white);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--green-light);
+}
+
+.filter-select {
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  background: var(--white);
+  color: var(--gray-800);
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--green-light);
+}
+
+.product-table-wrapper {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.product-table thead tr {
+  background: var(--gray-100);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.product-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.product-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  vertical-align: middle;
+}
+
+.product-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.product-table tbody tr:hover {
+  background: var(--gray-100);
+}
+
+.row-expired {
+  background: #fff5f5 !important;
+}
+
+.row-critical {
+  background: var(--orange-pale) !important;
+}
+
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  min-width: 140px;
+}
+
+.product-icon {
+  font-size: 1.2rem;
+}
+
+.col-category {
+  color: var(--gray-600);
+  font-size: 0.85rem;
+}
+
+.col-storage {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: var(--gray-800);
+}
+
+.col-opened {
+  white-space: nowrap;
+}
+
+.opened-toggle {
+  border: none;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.opened-toggle.is-opened {
+  background: var(--orange-pale);
+  color: var(--orange);
+}
+
+.opened-toggle.not-opened {
+  background: var(--green-pale);
+  color: var(--green);
+}
+
+.ai-label {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.col-qty {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.col-date {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+.col-actions {
+  display: flex;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.action-btn {
+  background: none;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.action-btn:hover {
+  background: var(--gray-100);
+}
+
+.action-cart:hover {
+  border-color: var(--green-light);
+  background: var(--green-pale);
+}
+
+.action-delete:hover {
+  border-color: var(--red);
+  background: var(--red-pale);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray-600);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.empty-state span {
+  font-size: 3rem;
+}
