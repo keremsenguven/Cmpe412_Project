@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+
+
+
+uvicorn main:app --reload
