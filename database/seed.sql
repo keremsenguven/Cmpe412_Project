@@ -1,51 +1,51 @@
 USE smart_kitchen_db;
 
--- USERS
 INSERT INTO users (username, email, password_hash)
 VALUES 
 ('mustafa', 'mustafa@example.com', 'hashed_pw_1'),
 ('demo_user', 'demo@example.com', 'hashed_pw_2');
 
--- INGREDIENTS
 INSERT INTO ingredients (name, category, default_unit)
 VALUES
-('domates', 'sebze', 'kg'),
-('yumurta', 'hayvansal', 'adet'),
-('biber', 'sebze', 'adet'),
-('süt', 'süt ürünü', 'litre'),
-('tavuk', 'et', 'kg');
+('milk', 'Liquid_Dairy', 'liter'),
+('yogurt', 'Fermented_Dairy', 'kg'),
+('cheddar cheese', 'Hard_Cheese', 'kg'),
+('chicken breast', 'Meat_Poultry', 'kg'),
+('tomato', 'Vegetables', 'kg'),
+('apple', 'Fruits', 'kg'),
+('rice with chicken', 'Cooked_Meals', 'portion');
 
--- STORAGE LOCATIONS
 INSERT INTO storage_locations (name, avg_temperature)
 VALUES
-('buzdolabı', 4),
-('oda sıcaklığı', 22),
-('dondurucu', -18);
+('refrigerator', 4),
+('room temperature', 22),
+('freezer', -18);
 
--- USER INVENTORY
-INSERT INTO user_inventory (user_id, ingredient_id, quantity, unit, storage_location_id, is_opened)
+INSERT INTO user_inventory 
+(user_id, ingredient_id, quantity, unit, storage_location_id, is_opened, expiry_date)
 VALUES
-(1, 1, 2.0, 'kg', 1, false),   -- domates
-(1, 2, 6, 'adet', 1, false),   -- yumurta
-(1, 3, 3, 'adet', 2, true);    -- biber
+(1, 1, 1.00, 'liter', 1, true, '2026-05-05'),
+(1, 4, 0.75, 'kg', 1, false, '2026-05-04'),
+(1, 5, 2.00, 'kg', 2, false, '2026-05-07'),
+(1, 7, 1.00, 'portion', 1, true, '2026-05-03');
 
--- RECIPES
-INSERT INTO recipes (name, instructions)
+INSERT INTO recipes (name, ingredient_str, instructions)
 VALUES
-('Menemen', 'Domates, biber ve yumurtayı pişir.'),
-('Tavuk Sote', 'Tavuk ve sebzeleri kavur.');
+('Chicken Tomato Saute', 
+ 'chicken breast, tomato, onion, pepper, oil, salt', 
+ 'Cook chicken with vegetables until tender.'),
 
--- RECIPE INGREDIENTS
-INSERT INTO recipe_ingredients (recipe_id, ingredient_name)
-VALUES
-(1, 'domates'),
-(1, 'yumurta'),
-(1, 'biber'),
-(2, 'tavuk'),
-(2, 'biber');
+('Fruit Yogurt Bowl', 
+ 'yogurt, apple, honey, oats', 
+ 'Mix yogurt with sliced apple, honey and oats.'),
 
--- SPOILAGE PREDICTIONS
-INSERT INTO spoilage_predictions (inventory_id, predicted_days, model_name, confidence_score)
+('Cheese Omelette', 
+ 'egg, cheddar cheese, milk, butter, salt', 
+ 'Whisk eggs with milk, add cheese and cook in a pan.');
+
+INSERT INTO spoilage_predictions (inventory_id, predicted_days, model_name)
 VALUES
-(1, 5, 'xgboost_v1', 0.87),
-(2, 10, 'xgboost_v1', 0.91);
+(1, 3, 'xgboost_v1'),
+(2, 2, 'xgboost_v1'),
+(3, 5, 'xgboost_v1'),
+(4, 1, 'xgboost_v1');
