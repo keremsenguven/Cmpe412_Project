@@ -5,33 +5,29 @@ import models, schemas
 from database import SessionLocal, engine
 import pandas as pd
 import pickle
-from pydantic import BaseModel # Bunu ekledik
+from pydantic import BaseModel
 import xgboost as xgb
 
-# Database tables otomatik olusturma
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
-# --- MODELLERİ YÜKLÜYORUZ ---
-
-# Kerem'in modelini yükleme
 spoilage_model = xgb.XGBRegressor()
 spoilage_model.load_model('xgboost_spoilage_model.json')
 
-# Sevval'in verilerini içeri almak için
 recipes_df = pd.read_csv("recipes_clean.csv")
 
 with open("recommendation_model_hybrid.pkl", "rb") as f:
     ai_model = pickle.load(f)
 
-# --- ŞEMALAR (KEREM'İN KODU İÇİN) ---
+
 
 class FoodItem(BaseModel):
-    Category: str  # Örn: 'Vegetables', 'Meat_Poultry'
+    Category: str  # e.g., 'Vegetables', 'Meat_Poultry'
     Temperature_C: float
-    Is_Package_Open: int  # 0 veya 1
+    Is_Package_Open: int  # 0 or 1
 
-# --- DATABASE BAĞLANTISI ---
+
+# --- DATABASE CONNECTION ---
 
 def get_db():
     db = SessionLocal()
@@ -40,24 +36,32 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/")
 def home():
-    return {"message": "Recipe Management API is Running!"}
+    return {"message": "Smart Kitchen API is Running Successfully!"}
+
 
 # --- RECIPE ENDPOINTS ---
 
 @app.post("/recipes/", response_model=schemas.Recipe)
 def create_recipe(recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
-    db_recipe = models.Recipe(title=recipe.title, description=recipe.description)
+    db_recipe = models.Recipe(
+        name=recipe.name,
+        ingredient_str=recipe.ingredient_str,
+        instructions=recipe.instructions
+    )
     db.add(db_recipe)
     db.commit()
     db.refresh(db_recipe)
     return db_recipe
 
+
 @app.get("/recipes/", response_model=List[schemas.Recipe])
 def read_recipes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     recipes = db.query(models.Recipe).offset(skip).limit(limit).all()
     return recipes
+
 
 @app.delete("/recipes/{recipe_id}")
 def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
@@ -68,33 +72,44 @@ def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Recipe successfully deleted!"}
 
+
 @app.put("/recipes/{recipe_id}", response_model=schemas.Recipe)
 def update_recipe(recipe_id: int, recipe: schemas.RecipeCreate, db: Session = Depends(get_db)):
     db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
     if db_recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found!")
-    db_recipe.title = recipe.title
-    db_recipe.description = recipe.description
+
+    db_recipe.name = recipe.name
+    db_recipe.ingredient_str = recipe.ingredient_str
+    db_recipe.instructions = recipe.instructions
+
     db.commit()
     db.refresh(db_recipe)
     return db_recipe
+
 
 # --- INGREDIENT ENDPOINTS ---
 
 @app.post("/ingredients/", response_model=schemas.Ingredient)
 def create_ingredient(ingredient: schemas.IngredientCreate, db: Session = Depends(get_db)):
-    db_ingredient = models.Ingredient(name=ingredient.name)
+    db_ingredient = models.Ingredient(
+        name=ingredient.name,
+        category=ingredient.category,
+        default_unit=ingredient.default_unit
+    )
     db.add(db_ingredient)
     db.commit()
     db.refresh(db_ingredient)
     return db_ingredient
+
 
 @app.get("/ingredients/", response_model=List[schemas.Ingredient])
 def read_ingredients(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     ingredients = db.query(models.Ingredient).offset(skip).limit(limit).all()
     return ingredients
 
-# --- AI ENDPOINTS (ŞEVVAL & KEREM) ---
+
+# --- AI ENDPOINTS (SEVVAL & KEREM) ---
 
 @app.post("/ai-recommend/")
 def get_ai_recommendation(user_ingredients: List[str]):
@@ -107,7 +122,6 @@ def get_ai_recommendation(user_ingredients: List[str]):
 
 @app.post("/predict")
 def predict_spoilage(item: FoodItem):
-    # Bu kısmı (features sözlüğünü) süslü parantezin içine yapıştır:
     features = {
         'Temperature_C': [item.Temperature_C],
         'Is_Package_Open': [item.Is_Package_Open],
@@ -125,7 +139,9 @@ def predict_spoilage(item: FoodItem):
         features[category_column] = [1]
 
     df = pd.DataFrame(features)
+
     prediction_raw = spoilage_model.predict(df)[0]
+
     final_days = max(1, int(round(float(prediction_raw))))
 
     return {
