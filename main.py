@@ -113,11 +113,28 @@ def read_ingredients(skip: int = 0, limit: int = 100, db: Session = Depends(get_
 
 @app.post("/ai-recommend/")
 def get_ai_recommendation(user_ingredients: List[str]):
-    return {
-        "status": "AI Model is Active!",
-        "message": "I received your ingredients and AI is thinking...",
-        "received_ingredients": user_ingredients
-    }
+    try:
+        # Combine user ingredients into a single string for Sevval's .pkl model
+        ingredients_input = " ".join(user_ingredients)
+
+        # Run the model to get recipe recommendations
+        recommendations = ai_model.predict([ingredients_input])
+
+        # Convert NumPy array to a standard Python list if necessary
+        if hasattr(recommendations, 'tolist'):
+            recommendations = recommendations.tolist()
+
+        return {
+            "status": "success",
+            "recommended_recipes": recommendations
+        }
+    except Exception as e:
+        # Prevent app crash and return an error message if the model fails
+        return {
+            "status": "error",
+            "message": f"An error occurred while running the recommendation model: {str(e)}",
+            "received_ingredients": user_ingredients
+        }
 
 
 @app.post("/predict")
