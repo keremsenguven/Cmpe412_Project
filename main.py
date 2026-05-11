@@ -7,19 +7,28 @@ import pandas as pd
 import pickle
 from pydantic import BaseModel
 import xgboost as xgb
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import normalize
 
+# Automatically create database tables based on models
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
+# --- LOAD AI MODELS ---
+
+# Load Kerem's Spoilage Prediction Model
 spoilage_model = xgb.XGBRegressor()
 spoilage_model.load_model('xgboost_spoilage_model.json')
 
+# Load Sevval's Recipe Recommendation Data and Model
 recipes_df = pd.read_csv("recipes_clean.csv")
 
 with open("recommendation_model_hybrid.pkl", "rb") as f:
     ai_model = pickle.load(f)
 
 
+# --- SCHEMAS (FOR KEREM'S AI ENDPOINT) ---
 
 class FoodItem(BaseModel):
     Category: str  # e.g., 'Vegetables', 'Meat_Poultry'
@@ -114,31 +123,44 @@ def read_ingredients(skip: int = 0, limit: int = 100, db: Session = Depends(get_
 @app.post("/ai-recommend/")
 def get_ai_recommendation(user_ingredients: List[str]):
     try:
-        # Combine user ingredients into a single string for Sevval's .pkl model
-        ingredients_input = " ".join(user_ingredients)
+        w2v = ai_model['w2v_model']
+        tfidf_v = ai_model['tfidf_vectorizer']
+        tfidf_m = ai_model['tfidf_matrix']
+        r_vecs = ai_model['recipe_vectors_norm']
+        df = ai_model['df']
 
-        # Run the model to get recipe recommendations
-        recommendations = ai_model.predict([ingredients_input])
+        user_ings = [i.lower().strip() for i in user_ingredients]
 
-        # Convert NumPy array to a standard Python list if necessary
-        if hasattr(recommendations, 'tolist'):
-            recommendations = recommendations.tolist()
+        vecs = [w2v.wv[i] for i in user_ings if i in w2v.wv]
+        if vecs:
+            u_w2v = normalize(np.mean(vecs, axis=0).reshape(1, -1))
+            s_w2v = cosine_similarity(u_w2v, r_vecs).flatten()
+        else:
+            s_w2v = np.zeros(len(df))
 
-        return {
-            "status": "success",
-            "recommended_recipes": recommendations
-        }
+        u_tfidf = tfidf_v.transform([' '.join(user_ings)])
+        s_tfidf = cosine_similarity(u_tfidf, tfidf_m).flatten()
+
+        scores = 0.4 * s_w2v + 0.6 * s_tfidf
+        top_idx = scores.argsort()[::-1][:10]
+
+        return [
+            {
+                "id": int(idx),
+                "name": df['recipe_name'].iloc[idx],
+                "ingredient_str": df['ingredient_str'].iloc[idx],
+                "instructions": df['instructions'].iloc[idx],
+                "score": round(float(scores[idx]), 3)
+            }
+            for idx in top_idx
+        ]
     except Exception as e:
-        # Prevent app crash and return an error message if the model fails
-        return {
-            "status": "error",
-            "message": f"An error occurred while running the recommendation model: {str(e)}",
-            "received_ingredients": user_ingredients
-        }
+        return []
 
 
 @app.post("/predict")
 def predict_spoilage(item: FoodItem):
+    # Pre-fill ALL categorical features with 0 (Simulating One-Hot Encoding)
     features = {
         'Temperature_C': [item.Temperature_C],
         'Is_Package_Open': [item.Is_Package_Open],
@@ -151,14 +173,18 @@ def predict_spoilage(item: FoodItem):
         'Category_Vegetables': [0]
     }
 
+    # Dynamically set the selected category to 1
     category_column = f"Category_{item.Category}"
     if category_column in features:
         features[category_column] = [1]
 
+    # Convert dictionary to Pandas DataFrame
     df = pd.DataFrame(features)
 
+    # Make the Prediction
     prediction_raw = spoilage_model.predict(df)[0]
 
+    # Ensure prediction doesn't fall below 1 day and round it
     final_days = max(1, int(round(float(prediction_raw))))
 
     return {
