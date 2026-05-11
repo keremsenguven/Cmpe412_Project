@@ -1,19 +1,30 @@
 import { useState } from 'react'
 import './AddProductModal.css'
 
-const CATEGORIES = ['vegetable', 'fruit', 'meat', 'dairy', 'animal', 'grain', 'legume', 'other']
+// Category names match the backend /predict endpoint expectations
+export const CATEGORIES = [
+  { value: 'Vegetables',      label: '🥦 Vegetables' },
+  { value: 'Fruits',          label: '🍎 Fruits' },
+  { value: 'Meat_Poultry',    label: '🍗 Meat & Poultry' },
+  { value: 'Liquid_Dairy',    label: '🥛 Liquid Dairy (milk, yogurt)' },
+  { value: 'Hard_Cheese',     label: '🧀 Hard Cheese' },
+  { value: 'Fermented_Dairy', label: '🫙 Fermented Dairy' },
+  { value: 'Cooked_Meals',    label: '🍲 Cooked Meals / Grains' },
+]
+
 const UNITS = ['kg', 'g', 'L', 'ml', 'pcs', 'slice', 'bunch', 'pack', 'box', 'head']
+
 const STORAGE_LOCATIONS = [
-  { value: 'refrigerator', label: '❄️ Refrigerator' },
-  { value: 'freezer',      label: '🧊 Freezer' },
-  { value: 'room temp',    label: '🌡️ Room Temperature' },
+  { value: 'refrigerator', label: '❄️ Refrigerator (4°C)' },
+  { value: 'freezer',      label: '🧊 Freezer (-18°C)' },
+  { value: 'room temp',    label: '🌡️ Room Temperature (22°C)' },
 ]
 
 const EMPTY = {
   name: '',
   quantity: '',
   unit: 'kg',
-  category: 'vegetable',
+  category: 'Vegetables',
   storageLocation: 'refrigerator',
   isOpened: false,
   expiryDate: '',
@@ -80,7 +91,9 @@ export default function AddProductModal({ onClose, onAdd }) {
             <div className="field">
               <label>Category</label>
               <select value={form.category} onChange={e => set('category', e.target.value)}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {CATEGORIES.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
               </select>
             </div>
             <div className="field">

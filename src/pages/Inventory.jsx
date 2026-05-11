@@ -5,8 +5,13 @@ import AddProductModal from '../components/AddProductModal'
 import './Inventory.css'
 
 const CATEGORY_ICONS = {
-  vegetable: '🥦', fruit: '🍎', meat: '🍗', dairy: '🥛',
-  animal: '🥚', grain: '🌾', legume: '🫘', other: '📦',
+  Vegetables:      '🥦',
+  Fruits:          '🍎',
+  Meat_Poultry:    '🍗',
+  Liquid_Dairy:    '🥛',
+  Hard_Cheese:     '🧀',
+  Fermented_Dairy: '🫙',
+  Cooked_Meals:    '🍲',
 }
 
 const STORAGE_ICONS = {

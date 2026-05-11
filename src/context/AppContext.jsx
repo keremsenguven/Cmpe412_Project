@@ -1,16 +1,17 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { getSpoilagePrediction, STORAGE_TEMPERATURES } from '../services/api'
 
 const AppContext = createContext(null)
 
 const DEMO_PRODUCTS = [
-  { id: 1, name: 'Tomato',        quantity: 2,   unit: 'kg',  category: 'vegetable', storageLocation: 'refrigerator', isOpened: false, expiryDate: getDateFromNow(2),   predictedDays: null },
-  { id: 2, name: 'Eggs',          quantity: 6,   unit: 'pcs', category: 'animal',    storageLocation: 'refrigerator', isOpened: false, expiryDate: getDateFromNow(1),   predictedDays: null },
-  { id: 3, name: 'Bell Pepper',   quantity: 3,   unit: 'pcs', category: 'vegetable', storageLocation: 'room temp',    isOpened: true,  expiryDate: getDateFromNow(4),   predictedDays: null },
-  { id: 4, name: 'Milk',          quantity: 1,   unit: 'L',   category: 'dairy',     storageLocation: 'refrigerator', isOpened: true,  expiryDate: getDateFromNow(3),   predictedDays: null },
-  { id: 5, name: 'Chicken',       quantity: 0.5, unit: 'kg',  category: 'meat',      storageLocation: 'freezer',      isOpened: false, expiryDate: getDateFromNow(30),  predictedDays: null },
-  { id: 6, name: 'Pasta',         quantity: 400, unit: 'g',   category: 'grain',     storageLocation: 'room temp',    isOpened: false, expiryDate: getDateFromNow(180), predictedDays: null },
-  { id: 7, name: 'Cheese',        quantity: 200, unit: 'g',   category: 'dairy',     storageLocation: 'refrigerator', isOpened: true,  expiryDate: getDateFromNow(0),   predictedDays: null },
-  { id: 8, name: 'Garlic',        quantity: 2,   unit: 'head',category: 'vegetable', storageLocation: 'room temp',    isOpened: false, expiryDate: getDateFromNow(21),  predictedDays: null },
+  { id: 1, name: 'domates',      quantity: 2,   unit: 'kg',  category: 'Vegetables',   storageLocation: 'refrigerator', isOpened: false, expiryDate: getDateFromNow(2),   predictedDays: null },
+  { id: 2, name: 'yumurta',      quantity: 6,   unit: 'pcs', category: 'Cooked_Meals', storageLocation: 'refrigerator', isOpened: false, expiryDate: getDateFromNow(1),   predictedDays: null },
+  { id: 3, name: 'biber',        quantity: 3,   unit: 'pcs', category: 'Vegetables',   storageLocation: 'room temp',    isOpened: true,  expiryDate: getDateFromNow(4),   predictedDays: null },
+  { id: 4, name: 'süt',          quantity: 1,   unit: 'L',   category: 'Liquid_Dairy', storageLocation: 'refrigerator', isOpened: true,  expiryDate: getDateFromNow(3),   predictedDays: null },
+  { id: 5, name: 'tavuk',        quantity: 0.5, unit: 'kg',  category: 'Meat_Poultry', storageLocation: 'freezer',      isOpened: false, expiryDate: getDateFromNow(30),  predictedDays: null },
+  { id: 6, name: 'makarna',      quantity: 400, unit: 'g',   category: 'Cooked_Meals', storageLocation: 'room temp',    isOpened: false, expiryDate: getDateFromNow(180), predictedDays: null },
+  { id: 7, name: 'peynir',       quantity: 200, unit: 'g',   category: 'Hard_Cheese',  storageLocation: 'refrigerator', isOpened: true,  expiryDate: getDateFromNow(0),   predictedDays: null },
+  { id: 8, name: 'sarımsak',     quantity: 2,   unit: 'head',category: 'Vegetables',   storageLocation: 'room temp',    isOpened: false, expiryDate: getDateFromNow(21),  predictedDays: null },
 ]
 
 function getDateFromNow(days) {
@@ -23,7 +24,16 @@ export function AppProvider({ children }) {
   const [products, setProducts] = useState(() => {
     try {
       const saved = localStorage.getItem('products')
-      return saved ? JSON.parse(saved) : DEMO_PRODUCTS
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const hasEnglish = parsed.some(p =>
+          ['tomato','eggs','milk','chicken','pasta','cheese','garlic','bell pepper']
+            .includes(p.name.toLowerCase())
+        )
+        if (hasEnglish) return DEMO_PRODUCTS
+        return parsed
+      }
+      return DEMO_PRODUCTS
     } catch {
       return DEMO_PRODUCTS
     }
@@ -46,8 +56,18 @@ export function AppProvider({ children }) {
     localStorage.setItem('shoppingList', JSON.stringify(shoppingList))
   }, [shoppingList])
 
-  function addProduct(product) {
-    setProducts(prev => [...prev, { ...product, id: Date.now(), predictedDays: null }])
+  async function addProduct(product) {
+    const newProduct = { ...product, id: Date.now(), predictedDays: null }
+    setProducts(prev => [...prev, newProduct])
+
+    // Call backend AI model to get spoilage prediction
+    const temperature = STORAGE_TEMPERATURES[product.storageLocation] ?? 4
+    const days = await getSpoilagePrediction(product.category, temperature, product.isOpened)
+    if (days !== null) {
+      setProducts(prev =>
+        prev.map(p => p.id === newProduct.id ? { ...p, predictedDays: days } : p)
+      )
+    }
   }
 
   function removeProduct(id) {

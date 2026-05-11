@@ -9,23 +9,93 @@ async function request(path, options = {}) {
   return res.json()
 }
 
+// POST /ai-recommend/ — sends ingredients, backend returns Turkish recipes from AI model
+// Falls back to GET /recipes/ (DB), then mock if both unavailable
 export async function getRecipeSuggestions(ingredients) {
+  // Try AI endpoint first
   try {
-    return await request('/recipes/suggest', {
+    const aiData = await request('/ai-recommend/', {
       method: 'POST',
-      body: JSON.stringify({ ingredients }),
+      body: JSON.stringify(ingredients),
     })
-  } catch {
-    return getMockRecipes(ingredients)
-  }
+    if (Array.isArray(aiData) && aiData.length > 0) {
+      const userNames = ingredients.map(i => i.toLowerCase())
+      return aiData.map((r, i) => {
+        const recipeIngredients = String(r.ingredient_str ?? '')
+          .split(',').map(s => s.trim()).filter(Boolean)
+        const steps = String(r.instructions ?? '')
+          .split('\n').map(s => s.trim()).filter(Boolean)
+        const matchCount = recipeIngredients.filter(ing =>
+          userNames.some(n => n.includes(ing) || ing.includes(n))
+        ).length
+        return {
+          id: r.id ?? i,
+          name: r.name,
+          ingredients: recipeIngredients,
+          steps,
+          duration: 'N/A',
+          difficulty: 'N/A',
+          matchCount,
+          matchRatio: recipeIngredients.length > 0 ? matchCount / recipeIngredients.length : 0,
+        }
+      })
+    }
+  } catch { /* fall through */ }
+
+  // Try DB recipes
+  try {
+    const data = await request('/recipes/')
+    if (Array.isArray(data) && data.length > 0) {
+      const userNames = ingredients.map(i => i.toLowerCase())
+      const transformed = data.map(r => {
+        const recipeIngredients = String(r.ingredient_str ?? '')
+          .split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+        const steps = String(r.instructions ?? '')
+          .split('\n').map(s => s.trim()).filter(Boolean)
+        const matchCount = recipeIngredients.filter(ing =>
+          userNames.some(n => n.includes(ing) || ing.includes(n))
+        ).length
+        return {
+          id: r.id,
+          name: r.name,
+          ingredients: recipeIngredients,
+          steps,
+          duration: 'N/A',
+          difficulty: 'N/A',
+          matchCount,
+          matchRatio: recipeIngredients.length > 0 ? matchCount / recipeIngredients.length : 0,
+        }
+      })
+      const scored = transformed.filter(r => r.matchCount > 0).sort((a, b) => b.matchRatio - a.matchRatio)
+      if (scored.length > 0) return scored
+    }
+  } catch { /* fall through */ }
+
+  return getMockRecipes(ingredients)
 }
 
-export async function getProductExpiry(productName) {
+// POST /predict — returns predicted_days_left from XGBoost model
+export async function getSpoilagePrediction(category, temperatureC, isOpened) {
   try {
-    return await request(`/products/expiry?name=${encodeURIComponent(productName)}`)
+    const data = await request('/predict', {
+      method: 'POST',
+      body: JSON.stringify({
+        Category: category,
+        Temperature_C: temperatureC,
+        Is_Package_Open: isOpened ? 1 : 0,
+      }),
+    })
+    return data.predicted_days_left ?? null
   } catch {
     return null
   }
+}
+
+// Storage location → temperature mapping (matches backend storage_locations table)
+export const STORAGE_TEMPERATURES = {
+  refrigerator: 4,
+  freezer: -18,
+  'room temp': 22,
 }
 
 function getMockRecipes(ingredients) {
@@ -33,67 +103,80 @@ function getMockRecipes(ingredients) {
   const all = [
     {
       id: 1,
-      name: 'Tomato Soup',
-      duration: '25 min',
-      difficulty: 'Easy',
-      ingredients: ['tomato', 'onion', 'garlic', 'olive oil'],
+      name: 'Domates Çorbası',
+      duration: '25 dk',
+      difficulty: 'Kolay',
+      ingredients: ['domates', 'soğan', 'sarımsak', 'zeytinyağı'],
       steps: [
-        'Sauté onion and garlic until soft.',
-        'Add tomatoes and cook for 10 minutes.',
-        'Blend until smooth, season with salt and pepper.',
-        'Serve hot.',
+        'Soğan ve sarımsağı kavurun.',
+        'Domatesleri ekleyip 10 dakika pişirin.',
+        'Blenderdan geçirin, tuz ve karabiber ekleyin.',
+        'Sıcak servis yapın.',
       ],
     },
     {
       id: 2,
-      name: 'Chicken Pasta',
-      duration: '30 min',
-      difficulty: 'Medium',
-      ingredients: ['chicken breast', 'pasta', 'onion', 'garlic', 'tomato'],
+      name: 'Tavuklu Makarna',
+      duration: '30 dk',
+      difficulty: 'Orta',
+      ingredients: ['tavuk', 'makarna', 'soğan', 'sarımsak', 'domates'],
       steps: [
-        'Dice chicken and sauté until cooked.',
-        'Add onion and garlic.',
-        'Add tomatoes to make the sauce.',
-        'Cook pasta and toss with the sauce.',
+        'Tavuğu küp küp kesip kavurun.',
+        'Soğan ve sarımsak ekleyin.',
+        'Domates ekleyip sos yapın.',
+        'Makarnayı haşlayıp sosla karıştırın.',
       ],
     },
     {
       id: 3,
-      name: 'Scrambled Eggs with Tomato',
-      duration: '15 min',
-      difficulty: 'Easy',
-      ingredients: ['eggs', 'tomato', 'onion'],
+      name: 'Menemen',
+      duration: '15 dk',
+      difficulty: 'Kolay',
+      ingredients: ['yumurta', 'domates', 'biber'],
       steps: [
-        'Sauté onion until translucent.',
-        'Add diced tomatoes and cook for 5 minutes.',
-        'Crack in eggs and stir until cooked.',
-        'Season and serve.',
+        'Biberi kavurun.',
+        'Domatesleri ekleyip 5 dakika pişirin.',
+        'Yumurtaları kırıp karıştırarak pişirin.',
+        'Tuz ekleyip servis yapın.',
       ],
     },
     {
       id: 4,
-      name: 'Garlic Yogurt Dip',
-      duration: '5 min',
-      difficulty: 'Easy',
-      ingredients: ['yogurt', 'garlic'],
+      name: 'Sarımsaklı Yoğurt',
+      duration: '5 dk',
+      difficulty: 'Kolay',
+      ingredients: ['yoğurt', 'sarımsak'],
       steps: [
-        'Grate garlic finely.',
-        'Mix with yogurt.',
-        'Add salt to taste.',
-        'Serve cold.',
+        'Sarımsağı rendeleyin.',
+        'Yoğurtla karıştırın.',
+        'Tuz ekleyin.',
+        'Soğuk servis yapın.',
       ],
     },
     {
       id: 5,
-      name: 'Cheese Omelette',
-      duration: '10 min',
-      difficulty: 'Easy',
-      ingredients: ['eggs', 'cheese'],
+      name: 'Peynirli Omlet',
+      duration: '10 dk',
+      difficulty: 'Kolay',
+      ingredients: ['yumurta', 'peynir'],
       steps: [
-        'Beat eggs well.',
-        'Pour into a buttered pan.',
-        'Grate cheese on top.',
-        'Fold in half and serve.',
+        'Yumurtaları çırpın.',
+        'Tereyağlı tavaya dökün.',
+        'Üzerine peynir rendeleyin.',
+        'İkiye katlayıp servis yapın.',
+      ],
+    },
+    {
+      id: 6,
+      name: 'Tavuk Sote',
+      duration: '25 dk',
+      difficulty: 'Orta',
+      ingredients: ['tavuk', 'biber', 'soğan', 'domates'],
+      steps: [
+        'Soğanı kavurun.',
+        'Tavuğu ekleyip pişirin.',
+        'Biber ve domatesleri ekleyin.',
+        'Tuz ve baharatla tatlandırın.',
       ],
     },
   ]
