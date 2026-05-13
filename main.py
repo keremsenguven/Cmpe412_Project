@@ -157,10 +157,20 @@ def get_ai_recommendation(user_ingredients: List[str]):
     except Exception as e:
         return []
 
-
 @app.post("/predict")
 def predict_spoilage(item: FoodItem):
-    # Pre-fill ALL categorical features with 0 (Simulating One-Hot Encoding)
+    # --- TÜRKÇE - İNGİLİZCE ÇEVİRİ SÖZLÜĞÜ (MAPPING) ---
+    category_mapping = {
+        "Sıvı Süt Ürünleri": "Liquid_Dairy",
+        "Fermente Süt Ürünleri": "Fermented_Dairy",
+        "Sert Peynir": "Hard_Cheese",
+        "Et ve Tavuk": "Meat_Poultry",
+        "Sebzeler": "Vegetables",
+        "Meyveler": "Fruits",
+        "Pişmiş Yemekler": "Cooked_Meals"
+    }
+    english_category = category_mapping.get(item.Category, item.Category)
+
     features = {
         'Temperature_C': [item.Temperature_C],
         'Is_Package_Open': [item.Is_Package_Open],
@@ -172,19 +182,14 @@ def predict_spoilage(item: FoodItem):
         'Category_Meat_Poultry': [0],
         'Category_Vegetables': [0]
     }
-
-    # Dynamically set the selected category to 1
-    category_column = f"Category_{item.Category}"
+    category_column = f"Category_{english_category}"
     if category_column in features:
         features[category_column] = [1]
 
-    # Convert dictionary to Pandas DataFrame
     df = pd.DataFrame(features)
 
-    # Make the Prediction
     prediction_raw = spoilage_model.predict(df)[0]
 
-    # Ensure prediction doesn't fall below 1 day and round it
     final_days = max(1, int(round(float(prediction_raw))))
 
     return {
