@@ -15,6 +15,16 @@ from sklearn.preprocessing import normalize
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Herkese izin ver (Test aşamasında olduğumuz için)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --- LOAD AI MODELS ---
 
 # Load Kerem's Spoilage Prediction Model
