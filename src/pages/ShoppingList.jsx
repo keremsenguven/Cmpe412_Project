@@ -20,12 +20,12 @@ export default function ShoppingList() {
     <div className="page">
       <div className="page-header sl-header">
         <div>
-          <h1>Shopping List</h1>
-          <p className="subtitle">{pending.length} item{pending.length !== 1 ? 's' : ''} pending</p>
+          <h1>Alışveriş Listesi</h1>
+          <p className="subtitle">{pending.length} ürün bekliyor</p>
         </div>
         {done.length > 0 && (
           <button className="btn-clear" onClick={clearCheckedItems}>
-            🗑️ Clear Completed ({done.length})
+            🗑️ Tamamlananları Temizle ({done.length})
           </button>
         )}
       </div>
@@ -33,24 +33,24 @@ export default function ShoppingList() {
       <form className="manual-add" onSubmit={handleAddManual}>
         <input
           type="text"
-          placeholder="Add item manually..."
+          placeholder="Manuel ekle..."
           value={newItem}
           onChange={e => setNewItem(e.target.value)}
           className="manual-input"
         />
-        <button type="submit" className="btn-add-manual">Add</button>
+        <button type="submit" className="btn-add-manual">Ekle</button>
       </form>
 
       {shoppingList.length === 0 && (
         <div className="empty-state">
           <span>🛒</span>
-          <p>Your shopping list is empty. Add missing ingredients from the Recipes page!</p>
+          <p>Alışveriş listeniz boş. Tarifler sayfasından eksik malzemeleri ekleyin!</p>
         </div>
       )}
 
       {pending.length > 0 && (
         <div className="sl-section">
-          <h2 className="sl-section-title">To Buy ({pending.length})</h2>
+          <h2 className="sl-section-title">Alınacaklar ({pending.length})</h2>
           <div className="sl-list">
             {pending.map(item => (
               <div key={item.id} className="sl-item">
@@ -80,7 +80,7 @@ export default function ShoppingList() {
 
       {done.length > 0 && (
         <div className="sl-section">
-          <h2 className="sl-section-title done-title">Bought ({done.length})</h2>
+          <h2 className="sl-section-title done-title">Alındı ({done.length})</h2>
           <div className="sl-list">
             {done.map(item => (
               <div key={item.id} className="sl-item sl-item-done">

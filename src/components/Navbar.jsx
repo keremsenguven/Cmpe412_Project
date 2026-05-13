@@ -9,27 +9,27 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-brand">
         <span className="brand-icon">🍽️</span>
-        <span className="brand-name">Recipe Engine</span>
+        <span className="brand-name">Tarif Motoru</span>
       </div>
       <div className="navbar-links">
         <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <span className="nav-icon">📊</span>
-          <span>Dashboard</span>
+          <span>Anasayfa</span>
           {criticalProducts.length > 0 && (
             <span className="badge badge-red">{criticalProducts.length}</span>
           )}
         </NavLink>
         <NavLink to="/pantry" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <span className="nav-icon">🧺</span>
-          <span>Pantry</span>
+          <span>Dolap</span>
         </NavLink>
         <NavLink to="/recipes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <span className="nav-icon">👨‍🍳</span>
-          <span>Recipes</span>
+          <span>Tarifler</span>
         </NavLink>
         <NavLink to="/shopping" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
           <span className="nav-icon">🛒</span>
-          <span>Shopping</span>
+          <span>Alışveriş</span>
           {shoppingList.filter(i => !i.checked).length > 0 && (
             <span className="badge badge-green">
               {shoppingList.filter(i => !i.checked).length}

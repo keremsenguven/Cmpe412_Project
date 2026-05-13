@@ -46,11 +46,11 @@ export default function Inventory() {
     <div className="page">
       <div className="page-header inv-header">
         <div>
-          <h1>Pantry</h1>
-          <p className="subtitle">{products.length} products stored</p>
+          <h1>Dolap</h1>
+          <p className="subtitle">{products.length} ürün mevcut</p>
         </div>
         <button className="btn-add" onClick={() => setShowModal(true)}>
-          + Add Product
+          + Ürün Ekle
         </button>
       </div>
 
@@ -58,41 +58,41 @@ export default function Inventory() {
         <input
           className="search-input"
           type="search"
-          placeholder="Search products..."
+          placeholder="Ürün ara..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         <select className="filter-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
           {categories.map(c => (
             <option key={c} value={c}>
-              {c === 'all' ? 'All Categories' : `${CATEGORY_ICONS[c] ?? '📦'} ${c}`}
+              {c === 'all' ? 'Tüm Kategoriler' : `${CATEGORY_ICONS[c] ?? '📦'} ${c}`}
             </option>
           ))}
         </select>
         <select className="filter-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-          <option value="expiry">Sort by Expiry</option>
-          <option value="name">Sort by Name</option>
+          <option value="expiry">Son Kullanma Tarihine Göre</option>
+          <option value="name">İsme Göre</option>
         </select>
       </div>
 
       {filtered.length === 0 ? (
         <div className="empty-state">
           <span>🧺</span>
-          <p>No products found. Add something new!</p>
+          <p>Ürün bulunamadı. Yeni bir şey ekleyin!</p>
         </div>
       ) : (
         <div className="product-table-wrapper">
           <table className="product-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Quantity</th>
-                <th>Storage</th>
-                <th>Opened</th>
-                <th>Expiry Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Ürün</th>
+                <th>Kategori</th>
+                <th>Miktar</th>
+                <th>Depolama</th>
+                <th>Açık mı</th>
+                <th>Son Kullanma</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
               </tr>
             </thead>
             <tbody>
@@ -116,13 +116,13 @@ export default function Inventory() {
                     <button
                       className={`opened-toggle ${product.isOpened ? 'is-opened' : 'not-opened'}`}
                       onClick={() => updateProduct(product.id, { isOpened: !product.isOpened })}
-                      title="Toggle opened status"
+                      title="Açık/kapalı değiştir"
                     >
-                      {product.isOpened ? 'Opened' : 'Sealed'}
+                      {product.isOpened ? 'Açık' : 'Kapalı'}
                     </button>
                   </td>
                   <td className="col-date">
-                    {new Date(product.expiryDate).toLocaleDateString('en-GB')}
+                    {new Date(product.expiryDate).toLocaleDateString('tr-TR')}
                     {product.predictedDays !== null && (
                       <span className="ai-label">AI</span>
                     )}

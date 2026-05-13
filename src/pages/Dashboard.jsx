@@ -13,8 +13,8 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Dashboard</h1>
-        <p className="subtitle">Overview of your pantry</p>
+        <h1>Anasayfa</h1>
+        <p className="subtitle">Dolabınıza genel bakış</p>
       </div>
 
       <div className="stats-grid">
@@ -22,28 +22,28 @@ export default function Dashboard() {
           <span className="stat-icon">🧺</span>
           <div>
             <span className="stat-value">{totalProducts}</span>
-            <span className="stat-label">Total Products</span>
+            <span className="stat-label">Toplam Ürün</span>
           </div>
         </div>
         <div className="stat-card stat-warning">
           <span className="stat-icon">⚠️</span>
           <div>
             <span className="stat-value">{criticalProducts.length}</span>
-            <span className="stat-label">Critical Items</span>
+            <span className="stat-label">Kritik Ürün</span>
           </div>
         </div>
         <div className="stat-card stat-danger">
           <span className="stat-icon">🗑️</span>
           <div>
             <span className="stat-value">{expiredCount}</span>
-            <span className="stat-label">Expired</span>
+            <span className="stat-label">Süresi Dolmuş</span>
           </div>
         </div>
         <div className="stat-card stat-green">
           <span className="stat-icon">🛒</span>
           <div>
             <span className="stat-value">{shoppingList.filter(i => !i.checked).length}</span>
-            <span className="stat-label">Shopping List</span>
+            <span className="stat-label">Alışveriş Listesi</span>
           </div>
         </div>
       </div>
@@ -51,8 +51,8 @@ export default function Dashboard() {
       {criticalProducts.length > 0 && (
         <div className="section">
           <div className="section-header">
-            <h2>🚨 Critical Items</h2>
-            <span className="section-sub">Expiring within 3 days</span>
+            <h2>🚨 Kritik Ürünler</h2>
+            <span className="section-sub">3 gün içinde bozulacak</span>
           </div>
           <div className="critical-list">
             {criticalProducts.map(product => (
@@ -68,8 +68,8 @@ export default function Dashboard() {
                   <ExpiryBadge days={product.daysLeft} />
                   <span className="critical-item-date">
                     {product.predictedDays !== null
-                      ? `AI prediction`
-                      : new Date(product.expiryDate).toLocaleDateString('en-GB')}
+                      ? `AI tahmini`
+                      : new Date(product.expiryDate).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
               </div>
@@ -81,22 +81,22 @@ export default function Dashboard() {
       <div className="quick-actions">
         <button className="quick-action-btn" onClick={() => navigate('/pantry')}>
           <span>🧺</span>
-          <span>Manage Pantry</span>
+          <span>Dolabı Yönet</span>
         </button>
         <button className="quick-action-btn" onClick={() => navigate('/recipes')}>
           <span>👨‍🍳</span>
-          <span>Suggest Recipes</span>
+          <span>Tarif Öner</span>
         </button>
         <button className="quick-action-btn" onClick={() => navigate('/shopping')}>
           <span>🛒</span>
-          <span>Shopping List</span>
+          <span>Alışveriş Listesi</span>
         </button>
       </div>
 
       {expiredCount === 0 && criticalProducts.length === 0 && (
         <div className="empty-state">
           <span>✅</span>
-          <p>Great! No expired or critical items in your pantry.</p>
+          <p>Harika! Dolabınızda süresi dolmuş veya kritik ürün yok.</p>
         </div>
       )}
     </div>

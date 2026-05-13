@@ -3,21 +3,21 @@ import './AddProductModal.css'
 
 // Category names match the backend /predict endpoint expectations
 export const CATEGORIES = [
-  { value: 'Vegetables',      label: '🥦 Vegetables' },
-  { value: 'Fruits',          label: '🍎 Fruits' },
-  { value: 'Meat_Poultry',    label: '🍗 Meat & Poultry' },
-  { value: 'Liquid_Dairy',    label: '🥛 Liquid Dairy (milk, yogurt)' },
-  { value: 'Hard_Cheese',     label: '🧀 Hard Cheese' },
-  { value: 'Fermented_Dairy', label: '🫙 Fermented Dairy' },
-  { value: 'Cooked_Meals',    label: '🍲 Cooked Meals / Grains' },
+  { value: 'Vegetables',      label: '🥦 Sebzeler' },
+  { value: 'Fruits',          label: '🍎 Meyveler' },
+  { value: 'Meat_Poultry',    label: '🍗 Et & Tavuk' },
+  { value: 'Liquid_Dairy',    label: '🥛 Sıvı Süt Ürünleri (süt, yoğurt)' },
+  { value: 'Hard_Cheese',     label: '🧀 Sert Peynir' },
+  { value: 'Fermented_Dairy', label: '🫙 Fermente Süt Ürünleri' },
+  { value: 'Cooked_Meals',    label: '🍲 Pişmiş Yemek / Tahıl' },
 ]
 
-const UNITS = ['kg', 'g', 'L', 'ml', 'pcs', 'slice', 'bunch', 'pack', 'box', 'head']
+const UNITS = ['kg', 'g', 'L', 'ml', 'adet', 'dilim', 'demet', 'paket', 'kutu', 'baş']
 
 const STORAGE_LOCATIONS = [
-  { value: 'refrigerator', label: '❄️ Refrigerator (4°C)' },
-  { value: 'freezer',      label: '🧊 Freezer (-18°C)' },
-  { value: 'room temp',    label: '🌡️ Room Temperature (22°C)' },
+  { value: 'refrigerator', label: '❄️ Buzdolabı (4°C)' },
+  { value: 'freezer',      label: '🧊 Dondurucu (-18°C)' },
+  { value: 'room temp',    label: '🌡️ Oda Sıcaklığı (22°C)' },
 ]
 
 const EMPTY = {
@@ -41,9 +41,9 @@ export default function AddProductModal({ onClose, onAdd }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!form.name.trim()) return setError('Please enter a product name.')
-    if (!form.quantity || Number(form.quantity) <= 0) return setError('Please enter a valid quantity.')
-    if (!form.expiryDate) return setError('Please enter an expiry date.')
+    if (!form.name.trim()) return setError('Lütfen ürün adı girin.')
+    if (!form.quantity || Number(form.quantity) <= 0) return setError('Lütfen geçerli bir miktar girin.')
+    if (!form.expiryDate) return setError('Lütfen son kullanma tarihi girin.')
     onAdd({ ...form, quantity: Number(form.quantity) })
     onClose()
   }
@@ -52,15 +52,15 @@ export default function AddProductModal({ onClose, onAdd }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Add Product</h2>
+          <h2>Ürün Ekle</h2>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="field">
-            <label>Product Name</label>
+            <label>Ürün Adı</label>
             <input
               type="text"
-              placeholder="e.g. Tomato"
+              placeholder="örn. domates"
               value={form.name}
               onChange={e => set('name', e.target.value)}
               autoFocus
@@ -69,7 +69,7 @@ export default function AddProductModal({ onClose, onAdd }) {
 
           <div className="field-row">
             <div className="field">
-              <label>Quantity</label>
+              <label>Miktar</label>
               <input
                 type="number"
                 min="0.1"
@@ -80,7 +80,7 @@ export default function AddProductModal({ onClose, onAdd }) {
               />
             </div>
             <div className="field">
-              <label>Unit</label>
+              <label>Birim</label>
               <select value={form.unit} onChange={e => set('unit', e.target.value)}>
                 {UNITS.map(u => <option key={u}>{u}</option>)}
               </select>
@@ -89,7 +89,7 @@ export default function AddProductModal({ onClose, onAdd }) {
 
           <div className="field-row">
             <div className="field">
-              <label>Category</label>
+              <label>Kategori</label>
               <select value={form.category} onChange={e => set('category', e.target.value)}>
                 {CATEGORIES.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -97,7 +97,7 @@ export default function AddProductModal({ onClose, onAdd }) {
               </select>
             </div>
             <div className="field">
-              <label>Storage Location</label>
+              <label>Depolama Yeri</label>
               <select value={form.storageLocation} onChange={e => set('storageLocation', e.target.value)}>
                 {STORAGE_LOCATIONS.map(s => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -107,7 +107,7 @@ export default function AddProductModal({ onClose, onAdd }) {
           </div>
 
           <div className="field">
-            <label>Expiry Date</label>
+            <label>Son Kullanma Tarihi</label>
             <input
               type="date"
               value={form.expiryDate}
@@ -123,16 +123,16 @@ export default function AddProductModal({ onClose, onAdd }) {
                 checked={form.isOpened}
                 onChange={e => set('isOpened', e.target.checked)}
               />
-              <span>Package already opened</span>
+              <span>Paket açık</span>
             </label>
-            <p className="field-hint">Opened packages spoil faster — the AI model will adjust its prediction.</p>
+            <p className="field-hint">Açık paketler daha hızlı bozulur — AI modeli tahmini buna göre ayarlar.</p>
           </div>
 
           {error && <p className="form-error">⚠ {error}</p>}
 
           <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary">Add</button>
+            <button type="button" className="btn-secondary" onClick={onClose}>İptal</button>
+            <button type="submit" className="btn-primary">Ekle</button>
           </div>
         </form>
       </div>

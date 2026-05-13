@@ -46,31 +46,31 @@ export default function Recipes() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Recipe Suggestions</h1>
-        <p className="subtitle">What can you cook with what you have?</p>
+        <h1>Tarif Önerileri</h1>
+        <p className="subtitle">Elinizdekilerle ne pişirebilirsiniz?</p>
       </div>
 
       <div className="recipe-action-bar">
         <div className="ingredients-summary">
           <span>🧺</span>
-          <span>You have <strong>{products.length}</strong> products in your pantry</span>
+          <span>Dolabınızda <strong>{products.length}</strong> ürün var</span>
         </div>
         <button className="btn-suggest" onClick={fetchRecipes} disabled={loading || products.length === 0}>
-          {loading ? '⏳ Searching...' : '✨ Suggest Recipes'}
+          {loading ? '⏳ Aranıyor...' : '✨ Tarif Öner'}
         </button>
       </div>
 
       {!searched && (
         <div className="recipe-intro">
           <div className="intro-icon">👨‍🍳</div>
-          <p>Click "Suggest Recipes" to find recipes that match your available ingredients!</p>
+          <p>Mevcut malzemelerinize uygun tarifleri bulmak için "Tarif Öner" butonuna tıklayın!</p>
         </div>
       )}
 
       {searched && !loading && recipes.length === 0 && (
         <div className="empty-state">
           <span>😕</span>
-          <p>No matching recipes found. Try adding more products to your pantry!</p>
+          <p>Eşleşen tarif bulunamadı. Dolabınıza daha fazla ürün eklemeyi deneyin!</p>
         </div>
       )}
 
@@ -89,7 +89,7 @@ export default function Recipes() {
                   <span className="meta-chip">⏱ {recipe.duration}</span>
                   <span className="meta-chip">📊 {recipe.difficulty}</span>
                   <span className={`meta-chip match-chip ${matchPct === 100 ? 'match-full' : matchPct >= 60 ? 'match-good' : 'match-partial'}`}>
-                    {matchPct}% match
+                    %{matchPct} eşleşme
                   </span>
                 </div>
                 <div className="ingredient-tags">
@@ -106,7 +106,7 @@ export default function Recipes() {
 
               {selected?.id === recipe.id && (
                 <div className="recipe-details">
-                  <h4>Instructions</h4>
+                  <h4>Yapılışı</h4>
                   <ol className="steps-list">
                     {recipe.steps.map((step, i) => (
                       <li key={i}>{step}</li>
@@ -114,17 +114,17 @@ export default function Recipes() {
                   </ol>
                   {missing.length > 0 && (
                     <div className="missing-section">
-                      <p className="missing-title">Missing: {missing.join(', ')}</p>
+                      <p className="missing-title">Eksik: {missing.join(', ')}</p>
                       <button
                         className="btn-add-cart"
                         onClick={() => addMissingToCart(recipe)}
                       >
-                        🛒 Add Missing to Shopping List
+                        🛒 Eksikleri Alışveriş Listesine Ekle
                       </button>
                     </div>
                   )}
                   {missing.length === 0 && (
-                    <div className="ready-banner">✅ You have all the ingredients! Ready to cook.</div>
+                    <div className="ready-banner">✅ Tüm malzemeler mevcut! Pişirmeye hazır.</div>
                   )}
                 </div>
               )}
