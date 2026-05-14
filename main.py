@@ -41,9 +41,9 @@ with open("recommendation_model_hybrid.pkl", "rb") as f:
 # --- SCHEMAS (FOR KEREM'S AI ENDPOINT) ---
 
 class FoodItem(BaseModel):
-    Category: str  # e.g., 'Vegetables', 'Meat_Poultry'
-    Temperature_C: float
-    Is_Package_Open: int  # 0 or 1
+    Kategori: str        #örn: 'Sebzeler', 'Et ve Tavuk'
+    Sicaklik_C: float    #örn: 4.0
+    Paket_Acik_Mi: str   #örn: 'Evet' veya 'Hayır'
 
 
 # --- DATABASE CONNECTION ---
@@ -167,9 +167,10 @@ def get_ai_recommendation(user_ingredients: List[str]):
     except Exception as e:
         return []
 
+
 @app.post("/predict")
 def predict_spoilage(item: FoodItem):
-    # --- TÜRKÇE - İNGİLİZCE ÇEVİRİ SÖZLÜĞÜ (MAPPING) ---
+    # 1. KATEGORİ ÇEVİRİSİ (Türkçe -> İngilizce)
     category_mapping = {
         "Sıvı Süt Ürünleri": "Liquid_Dairy",
         "Fermente Süt Ürünleri": "Fermented_Dairy",
@@ -179,11 +180,13 @@ def predict_spoilage(item: FoodItem):
         "Meyveler": "Fruits",
         "Pişmiş Yemekler": "Cooked_Meals"
     }
-    english_category = category_mapping.get(item.Category, item.Category)
+    english_category = category_mapping.get(item.Kategori, item.Kategori)
+
+    is_open = 1 if str(item.Paket_Acik_Mi).strip().lower() in ["evet", "açık", "true", "1"] else 0
 
     features = {
-        'Temperature_C': [item.Temperature_C],
-        'Is_Package_Open': [item.Is_Package_Open],
+        'Temperature_C': [item.Sicaklik_C],
+        'Is_Package_Open': [is_open],
         'Category_Cooked_Meals': [0],
         'Category_Fermented_Dairy': [0],
         'Category_Fruits': [0],
@@ -192,18 +195,22 @@ def predict_spoilage(item: FoodItem):
         'Category_Meat_Poultry': [0],
         'Category_Vegetables': [0]
     }
+
     category_column = f"Category_{english_category}"
     if category_column in features:
         features[category_column] = [1]
 
     df = pd.DataFrame(features)
 
-    prediction_raw = spoilage_model.predict(df)[0]
 
+    prediction_raw = spoilage_model.predict(df)[0]
     final_days = max(1, int(round(float(prediction_raw))))
 
     return {
-        "status": "success",
-        "input_category": item.Category,
-        "predicted_days_left": final_days
+        "durum": "basarili",
+        "secilen_kategori": item.Kategori,
+        "sicaklik": item.Sicaklik_C,
+        "paket_durumu": item.Paket_Acik_Mi,
+        "tahmini_kalan_gun": final_days,
+        "mesaj": f"Bu ürün {item.Sicaklik_C}°C sıcaklıkta tahminen {final_days} gün daha dayanır."
     }
