@@ -23,6 +23,7 @@ export async function getRecipeSuggestions(ingredients) {
       return aiData.map((r, i) => {
         const recipeIngredients = String(r.ingredient_str ?? '')
           .split(',').map(s => s.trim()).filter(Boolean)
+          .filter(s => !s.endsWith(':') && !s.toLowerCase().includes(' için:') && !/^\d+\s*(kg|g|ml|l|adet|tane|yemek kaşığı|çay kaşığı|su bardağı|demet|diş|baş|dilim|paket|kutu|tutam)\s*$/i.test(s))
         const steps = String(r.instructions ?? '')
           .split('\n').map(s => s.trim()).filter(Boolean)
         const matchCount = recipeIngredients.filter(ing =>
@@ -50,6 +51,7 @@ export async function getRecipeSuggestions(ingredients) {
       const transformed = data.map(r => {
         const recipeIngredients = String(r.ingredient_str ?? '')
           .split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+          .filter(s => !s.endsWith(':') && !s.includes(' için:'))
         const steps = String(r.instructions ?? '')
           .split('\n').map(s => s.trim()).filter(Boolean)
         const matchCount = recipeIngredients.filter(ing =>
