@@ -83,6 +83,7 @@ export function AppProvider({ children }) {
     if (product.predictedDays !== null && product.predictedDays !== undefined) {
       return product.predictedDays
     }
+    if (!product.expiryDate) return null
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const expiry = new Date(product.expiryDate)

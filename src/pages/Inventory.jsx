@@ -122,7 +122,7 @@ export default function Inventory() {
                     </button>
                   </td>
                   <td className="col-date">
-                    {new Date(product.expiryDate).toLocaleDateString('tr-TR')}
+                    {product.expiryDate ? new Date(product.expiryDate).toLocaleDateString('tr-TR') : '—'}
                     {product.predictedDays !== null && (
                       <span className="ai-label">AI</span>
                     )}

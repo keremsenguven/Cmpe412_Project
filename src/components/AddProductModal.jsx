@@ -43,7 +43,6 @@ export default function AddProductModal({ onClose, onAdd }) {
     e.preventDefault()
     if (!form.name.trim()) return setError('Lütfen ürün adı girin.')
     if (!form.quantity || Number(form.quantity) <= 0) return setError('Lütfen geçerli bir miktar girin.')
-    if (!form.expiryDate) return setError('Lütfen son kullanma tarihi girin.')
     onAdd({ ...form, quantity: Number(form.quantity) })
     onClose()
   }
@@ -107,7 +106,7 @@ export default function AddProductModal({ onClose, onAdd }) {
           </div>
 
           <div className="field">
-            <label>Son Kullanma Tarihi</label>
+            <label>Son Kullanma Tarihi <span style={{fontWeight:'normal', color:'#999'}}>(opsiyonel)</span></label>
             <input
               type="date"
               value={form.expiryDate}
