@@ -154,16 +154,24 @@ def get_ai_recommendation(user_ingredients: List[str]):
         scores = 0.4 * s_w2v + 0.6 * s_tfidf
         top_idx = scores.argsort()[::-1][:10]
 
-        return [
-            {
+        filtered_results = []
+        for idx in top_idx:
+            raw_ingredients = str(df['ingredient_str'].iloc[idx]).split(',')
+
+            clean_ingredients = [item.strip() for item in raw_ingredients if "için" not in item.lower()]
+
+            clean_ingredient_str = ", ".join(clean_ingredients)
+
+            filtered_results.append({
                 "id": int(idx),
                 "name": df['recipe_name'].iloc[idx],
-                "ingredient_str": df['ingredient_str'].iloc[idx],
+                "ingredient_str": clean_ingredient_str,
                 "instructions": df['instructions'].iloc[idx],
                 "score": round(float(scores[idx]), 3)
-            }
-            for idx in top_idx
-        ]
+            })
+
+        return filtered_results
+
     except Exception as e:
         return []
 
