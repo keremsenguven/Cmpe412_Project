@@ -57,18 +57,32 @@ export function AppProvider({ children }) {
   }, [shoppingList])
 
   async function addProduct(product) {
+
+  if (product.expiryDate) {
     const newProduct = { ...product, id: Date.now(), predictedDays: null }
     setProducts(prev => [...prev, newProduct])
-
-    // Call backend AI model to get spoilage prediction
-    const temperature = STORAGE_TEMPERATURES[product.storageLocation] ?? 4
-    const days = await getSpoilagePrediction(product.category, temperature, product.isOpened)
-    if (days !== null) {
-      setProducts(prev =>
-        prev.map(p => p.id === newProduct.id ? { ...p, predictedDays: days } : p)
-      )
-    }
+    return
   }
+
+
+  const tempId = Date.now()
+  const newProduct = { ...product, id: tempId, predictedDays: null, expiryDate: null }
+  setProducts(prev => [...prev, newProduct])
+
+  const temperature = STORAGE_TEMPERATURES[product.storageLocation] ?? 4
+  const days = await getSpoilagePrediction(product.category, temperature, product.isOpened)
+
+  if (days !== null) {
+    const aiExpiryDate = getDateFromNow(days)
+    setProducts(prev =>
+      prev.map(p =>
+        p.id === tempId
+          ? { ...p, predictedDays: days, expiryDate: aiExpiryDate }
+          : p
+      )
+    )
+  }
+}
 
   function removeProduct(id) {
     setProducts(prev => prev.filter(p => p.id !== id))
@@ -80,16 +94,13 @@ export function AppProvider({ children }) {
 
   // Uses predictedDays from AI backend when available, otherwise calculates from expiryDate
   function getDaysUntilExpiry(product) {
-    if (product.predictedDays !== null && product.predictedDays !== undefined) {
-      return product.predictedDays
-    }
-    if (!product.expiryDate) return null
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const expiry = new Date(product.expiryDate)
-    expiry.setHours(0, 0, 0, 0)
-    return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
-  }
+   if (!product.expiryDate) return null
+   const today = new Date()
+   today.setHours(0, 0, 0, 0)
+   const expiry = new Date(product.expiryDate)
+   expiry.setHours(0, 0, 0, 0)
+   return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
+}
 
   function addToShoppingList(item) {
     setShoppingList(prev => {
@@ -112,9 +123,9 @@ export function AppProvider({ children }) {
   }
 
   const criticalProducts = products
-    .map(p => ({ ...p, daysLeft: getDaysUntilExpiry(p) }))
-    .filter(p => p.daysLeft <= 3)
-    .sort((a, b) => a.daysLeft - b.daysLeft)
+  .map(p => ({ ...p, daysLeft: getDaysUntilExpiry(p) }))
+  .filter(p => p.daysLeft !== null && p.daysLeft <= 3)
+  .sort((a, b) => a.daysLeft - b.daysLeft)
 
   return (
     <AppContext.Provider value={{

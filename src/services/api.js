@@ -1,4 +1,4 @@
-const BASE = '/api'
+const BASE = 'http://100.101.65.99:30081'
 
 async function request(path, options = {}) {
   const res = await fetch(BASE + path, {
