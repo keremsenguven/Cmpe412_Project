@@ -15,9 +15,9 @@ export const CATEGORIES = [
 const UNITS = ['kg', 'g', 'L', 'ml', 'adet', 'dilim', 'demet', 'paket', 'kutu', 'baş']
 
 const STORAGE_LOCATIONS = [
-  { value: 'refrigerator', label: '❄️ Buzdolabı (4°C)' },
-  { value: 'freezer',      label: '🧊 Dondurucu (-18°C)' },
-  { value: 'room temp',    label: '🌡️ Oda Sıcaklığı (22°C)' },
+  { value: 'refrigerator', label: '❄️ Refrigerator (4°C)' },
+  { value: 'freezer',      label: '🧊 Freezer (-18°C)' },
+  { value: 'room temp',    label: '🌡️ Room Temp (22°C)' },
 ]
 
 const EMPTY = {
@@ -124,7 +124,6 @@ export default function AddProductModal({ onClose, onAdd }) {
               />
               <span>Paket açık</span>
             </label>
-            <p className="field-hint">Açık paketler daha hızlı bozulur — AI modeli tahmini buna göre ayarlar.</p>
           </div>
 
           {error && <p className="form-error">⚠ {error}</p>}
