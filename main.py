@@ -15,11 +15,11 @@ from sklearn.preprocessing import normalize
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
+#CORS middleware
 from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Herkese izin ver (Test aşamasında olduğumuz için)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -154,12 +154,11 @@ def get_ai_recommendation(user_ingredients: List[str]):
         scores = 0.4 * s_w2v + 0.6 * s_tfidf
         top_idx = scores.argsort()[::-1][:10]
 
+    #smart ingredient filtering
         filtered_results = []
         for idx in top_idx:
             raw_ingredients = str(df['ingredient_str'].iloc[idx]).split(',')
-
             clean_ingredients = [item.strip() for item in raw_ingredients if "için" not in item.lower()]
-
             clean_ingredient_str = ", ".join(clean_ingredients)
 
             filtered_results.append({
@@ -221,4 +220,32 @@ def predict_spoilage(item: FoodItem):
         "paket_durumu": item.Paket_Acik_Mi,
         "tahmini_kalan_gun": final_days,
         "mesaj": f"Bu ürün {item.Sicaklik_C}°C sıcaklıkta tahminen {final_days} gün daha dayanır."
+    }
+
+
+from datetime import datetime, timedelta
+
+
+class PantryItemCreate(BaseModel):
+    kategori: str
+    sicaklik: float
+    paket_acik_mi: str
+    son_kullanma_tarihi: str = None
+
+
+@app.post("/pantry/add")
+def add_to_pantry(item: PantryItemCreate):
+    if not item.son_kullanma_tarihi:
+        ai_item = FoodItem(Kategori=item.kategori, Sicaklik_C=item.sicaklik, Paket_Acik_Mi=item.paket_acik_mi)
+        ai_result = predict_spoilage(ai_item)
+
+        kalan_gun = ai_result["tahmini_kalan_gun"]
+        yeni_tarih = datetime.now() + timedelta(days=kalan_gun)
+
+        item.son_kullanma_tarihi = yeni_tarih.strftime("%Y-%m-%d")
+
+    return {
+        "durum": "basarili",
+        "mesaj": "Ürün dolaba eklendi!",
+        "kaydedilen_tarih": item.son_kullanma_tarihi
     }
